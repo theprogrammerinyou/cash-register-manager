@@ -1,100 +1,49 @@
-const billAmt = document.querySelector("#billAmt");
-const cashGiven = document.querySelector("#cashGiven");
+const billAmount = document.querySelector("#bill-amount");
+const cashGiven = document.querySelector("#cash-given");
+const checkButton = document.querySelector("#check-button");
+const message = document.querySelector("#error-message");
+const noOfNotes = document.querySelectorAll(".no-of-notes");
 
-const errorDiv = document.querySelector(".errorMsg");
+const availableNotes = [2000, 500, 100, 20, 10, 5, 1];
 
-const cashGivenDiv = document.querySelector(".cashGivenInput");
-const changeReturnDiv = document.querySelector(".changeReturn");
-
-const output= document.querySelector("#output");
-
-const nextBtn = document.querySelector("#nextBtn");
-const checkBtn = document.querySelector("#checkBtn");
-
-const noOfNotes= document.querySelectorAll(".noOfNotes");
-
-const arrayNoteAmt = [2000, 500, 100, 20, 10, 5, 1];
-
-
-//if bill amt filled, display cash given input field
-nextBtn.addEventListener('click', ()=>{
-    hideError();
-    if(Number(billAmt.value)>0){
-
-        nextBtn.style.display = "none";
-        cashGivenDiv.style.display = "block";
+checkButton.addEventListener("click", function validateBillAndCashAmount() {
+  hideMessage();
+  if (billAmount.value > 0) {
+    // 12
+    if (cashGiven.value >= billAmount.value) {
+      // 2022> 12 => true
+      const amountToBeReturned = cashGiven.value - billAmount.value; // 2022 - 12 = 2010
+      calculateChange(amountToBeReturned);
+    } else {
+      showMessage("Do you wanna wash plates?");
     }
-    else{
-        showError("Enter valid bill amount");
-    }
-} )
+  } else {
+    showMessage("Invalid Bill Amount");
+  }
+});
 
+function calculateChange(amountToBeReturned) {
+  // 2010
+  // go over all the available
+  for (let i = 0; i < availableNotes.length; i++) {
+    // no of notes need for the denomination
+    const numberOfNotes = Math.trunc(amountToBeReturned / availableNotes[i]);
+    // 2010 / 2000 = 1 || 10 / 500 = 0
 
-//check btn clicked handler
-checkBtn.addEventListener('click', ()=>{
-    clearNoOfNotes();
-    hideError();
-    //error handling
-    let billAmtValue= Number(billAmt.value);
-    let cashGivenValue= Number(cashGiven.value);
+    // amount left after calculating the number of notes needed
+    amountToBeReturned = amountToBeReturned % availableNotes[i];
+    // 2010 % 2000 = 10 || 10 % 500 = 10
 
-    if(billAmtValue>0 && cashGivenValue>0){
-
-        if(!Number.isInteger(cashGivenValue)){
-            showError("Enter valid amount in cash given field");
-            return;
-        }
-        if(billAmtValue > cashGivenValue){
-            showError("Cash is less than bill, please enter right amount");
-            return;
-        }
-        //if input valid calculate no. of notes
-        calculateNotes(billAmtValue, cashGivenValue);
-    } else{
-        showError("Enter valid bill amount and cash given to continue");
-        }
-})
-
-//to calculate no. of notes
-function calculateNotes(bill, cash){
-    let returnAmt = cash-bill;
-    
-    if(returnAmt<1){
-        showError("No amount should be returned");
-        return;
-    }
-    changeReturnDiv.style.display = "block";
-
-    for(let i=0; i<arrayNoteAmt.length; i++){
-        returnAmt= compare(returnAmt, arrayNoteAmt[i], i);
-    }
-    
+    // updating the no of notes in the table for the current amount
+    noOfNotes[i].innerText = numberOfNotes;
+  }
 }
 
-//compare with currency and post the no. of notes on screen
-function compare(remainder, noteAmt, index){
-
-    if(remainder >= noteAmt){
-        let notes = Math.floor(remainder/noteAmt);
-        remainder = remainder - notes*noteAmt;
-        noOfNotes[index].innerText = `${notes}`;
-    }
-    return remainder
+function hideMessage() {
+  message.style.display = "none";
 }
 
-//if check button clicked without refreshing the page, clear the no of notes values on the screen
-function clearNoOfNotes(){
-    for(let notes of noOfNotes){
-        notes.innerText = "";
-    }
-}
-
-function showError(text){
-    errorDiv.style.display = "block";
-    errorDiv.innerText= text;
-    changeReturnDiv.style.display = "none";
-}
-
-function hideError(){
-    errorDiv.style.display = "none";
+function showMessage(msg) {
+  message.style.display = "block";
+  message.innerText = msg;
 }
